@@ -31,5 +31,14 @@ Noora.args = {
     age: 5,
   },
 };
+export const Unauthorized = Template.bind({});
+Noora.args = {
+  octopus: {
+    name: "Noora",
+    color: "hotpink",
+    age: 5,
+  },
+  locked: true,
+};
 
 export default Story;
