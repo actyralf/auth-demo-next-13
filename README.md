@@ -1,108 +1,92 @@
-# Capstone-Project-Template for Octopodes
+# Authentifizierung mit NextAuth
 
-- Next.js project created with `create-next-app`
-- [Default Styling (with CSS Modules) has been removed](#styling)
-- [Styled Components support added](#styling)
-- [Mongoose connectivity support added](#mongoose-connectivity)
-- [Storybook support added](#storybook)
-- [ESLint config added](#eslint)
-- [React Testing Library & Jest support added](#testing)
-- [Prettier config added](#prettier)
+## Was ist Authentifizierung?
 
-## Getting Started
+Authentifizierung ist die Verifizierung der Identität eines Benutzers.
+Authentifizierung beantwortet die Frage "Wer ist der Benutzer?", Autorisierung
+hingegen die Frage "Was darf der Benutzer?"
 
-Run the development server:
+## Warum brauchen wir das?
 
-```bash
-npm run dev
-```
+Viele unserer Apps erlauben es dem Benutzer, eigene Daten zu speichern und
+wieder abzurufen.
 
-Open [http://localhost:3000](http://localhost:3000) to see the result.
+Um die Daten eines Benutzers vor dem Zugriff anderer Benutzer zu schützen,
+müssen wir dafür sorgen, dass unsere API geschützte Daten nur an einen
+authentifizierten User zurückgibt.
 
-Run Storybook:
+Außerdem möchten wir in unserer Web-App bestimmte Funktionalitäten nur für
+angemeldete Nutzer sichtbar machen und den Nutzer z.B. mit seinem Namen begrüßen
+können.
 
-```bash
-npm run storybook
-```
+## Was sind Authentication Provider?
 
-Open [http://localhost:6006](http://localhost:6006) to inspect your components
-with Storybook.
+Authentication Provider sind Institutionen/Systeme, die die Identität eines
+Nutzers für uns überprüfen. Bekannte Authentication Provider sind z.B. Google,
+Facebook oder (unter Entwicklern) Github.
 
-Run tests:
+Hat sich ein Nutzer erfolgreich authentifiziert, stellen die Systeme ihm einen
+zeitlich begrenzten "Pass" in Form eines digital signierten
+Authentifizierungs-Tokens aus. Mit diesem Token ruft der Nutzer dann unsere
+geschützten API-Routen auf. Da wir dem Authentication Provider und der digitalen
+Signatur vertrauen, können wir den privaten Content des Users ausgeben.
 
-```bash
-npm run test
-# or
-npm run test:watch
-```
+## Was passiert im Hintergrund?
 
-## Styling
+![Auth Flow Image](_data/auth-flow.png)
 
-We removed the Next.js default styles and added Styled Components support.
+## Was ist NextAuth?
 
-You can find an initial [`GobalStyles.js`](/styles/GlobalStyles.js) in the
-`/styles` directory. Storybook is already configured to respect styles from
-`GlobalStyles.js`
+NextAuth ist ein Package, das uns sehr viele Aspekte des
+Authentifizierungs-Flows abnimmt, insbesondere die Kommunikation mit den
+Authentication Providern und den Zugriff auf Informationen zum eingeloggten
+User.
 
-## Mongoose connectivity
+## Wie integrieren wir NextAuth in unsere App?
 
-We added a mongoose connection helper function in
-[`/pages/api/_db/connect-db.js`](/pages/api/_db/connect-db.js).
+Die Beispiel-Integration erfolgt mit dem Github-Provider, die Integration
+anderer Provider funktioniert nach dem gleichen Schema.
 
-Please remember to wrap your API route handler functions with the `connectDB()`
-helper when exporting:
+### Schritt 1: Installieren und Einrichten
 
-```
-export default connectDB(handler);
-```
+- Getting started:
+  [NextAuth documentation](https://next-auth.js.org/getting-started/example)
+- Installieren mit `npm i next-auth`
+- Github Apps konfigurieren:
 
-To use your own DB, create a `.env.local` file and add your connection string as
-shown in [`.env.local.example`](/.env.local.example). Please remember to add
-your database name at the end of the connection string.
+  - Unter Settings / Developer Settings / OAuth Apps
+  - Für Production mit der Production Domain
+  - Für http://localhost:3000 für die lokale Entwicklung
+  - Callback URL: Host + `/api/auth/callback/github`
+  - Client ID und Client Secret kopieren
 
-We prepared a demo API route handler
-[`pages/api/octopodes.js`](/pages/api/octopodes.js) and some demo data in the
-[`/_data`](/_data) folder. Additionally there is a mongoose model for the demo
-data in [`/pages/api/_db/models`](/pages/api/_db/models). This is just for
-demonstration purposes - create your own data and models following this pattern.
+- `/auth/[...nextauth].js` Datei im /api Folder erstellen und gemäß
+  Dokumentation konfigurieren
+- In `_app.js` `SessionProvider` importieren und gemäß Dokumentation einbinden
+- `.env.local` erstellen und ID und Secret der lokalen Github-App hinterlegen
+- Zusätzlich die Umgebungsvariable `NEXTAUTH_SECRET` anlegen und den Wert durch
+  Ausführen des Befehls `openssl rand -base64 32` erzeugen
 
-## Storybook
+### Schritt 2: Login/Logout und User-Infos im Frontend integrieren
 
-We created a demo component
-[`/components/OctopusCard.js`](/components/OctopusCard.js) and corresponding
-stories. Create your own stories following this pattern.
+- `useSession`, `signIn` und `signOut` verwenden, um User ein- und auszuloggen
 
-## ESLint
+### Schritt 3: Deployment
 
-You can run ESLint from the terminal by typing
+- Auf Vercel Umgebungsvariablen mit den gleichen Namen anlegen, hier aber ID und
+  Secret der Github Production App eintragen
+- `NEXTAUTH_SECRET` mit einem neu erzeugten Secret belegen
 
-```bash
-npm run lint
-```
+### Schritt 4: API-Routen schützen
 
-Please make sure that there are no linter errors before pushing to Github. Your
-pull requests will report failed code quality checks otherwise.
+- In der zu schützenden API-Route das Token mit `getToken()` verifizieren und
+  auslesen.
 
-## Testing
+### Schritt 5: Workaround für Vercel Preview Deployment
 
-Please write your tests in the [`/__tests__`](/__tests__/) folder instead of
-placing them next to your components. Next.js does not allow test files in its
-`/pages` directory.
-
-We prepared a demo test that tests if the Homepage renders a 🐙.
-
-Please make sure that all tests pass before pushing to Github. Your pull
-requests will report failed test runs otherwise.
-
-## Prettier
-
-We added a [Prettier configuration file](/.prettierrc) with basic formatting
-rules. Feel free to edit these rules to your taste.
-
-You can check the formatting of your files with `npm run prettier`
-
-You can auto format all files in the project by calling
-`npm run prettier:write`.
-
-Please make sure that your code passes the prettier check before pushing to
-Github. Your pull requests will report failed code quality checks otherwise.
+- Wir machen uns zunutze, dass Vercel in der Preview-Umgebung die
+  Umgebungsvariable `VERCEL_ENV` auf den Wert `preview` setzt.
+- In diesem Fall konfigurieren wir in `/api/auth/[...nextauth].js` nicht den
+  Github-Authentication-Provider, sondern den
+  [Credentials-Provider](https://next-auth.js.org/providers/credentials) und
+  konfigurieren Test-Credentials
