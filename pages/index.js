@@ -68,12 +68,16 @@ export default function Home() {
 const StyledLink = styled(Link)`
   text-decoration: none;
   cursor: pointer;
-  &:active,
+
+  &:link,
   &:visited {
-    color: inherit;
+    color: #edf2f4;
   }
   &:hover {
     color: darkgoldenrod;
+  }
+  &:active {
+    color: #edf2f4;
   }
 `;
 
