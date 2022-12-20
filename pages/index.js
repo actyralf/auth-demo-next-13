@@ -40,6 +40,7 @@ export default function Home() {
         ) : (
           <StyledButton
             onClick={() => {
+              console.log("signin");
               signIn(signInMethod);
             }}
           >
@@ -54,7 +55,7 @@ export default function Home() {
               <StyledLink href={`/octopodes/${octo.id}`}>
                 {octo.name}{" "}
                 <StyledHighlight>
-                  {octo.email === session?.user?.email ? "That's me!!" : ""}
+                  {octo.matchesLoggedInUser ? "That's me!!" : ""}
                 </StyledHighlight>
               </StyledLink>
             </li>

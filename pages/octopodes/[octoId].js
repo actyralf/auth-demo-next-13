@@ -33,7 +33,7 @@ export const OctoDetails = () => {
 
   return (
     <StyledContainer>
-      {octopus && <OctopusCard octopus={octopus} locked={locked} />}
+      {<OctopusCard octopus={octopus} locked={locked} />}
     </StyledContainer>
   );
 };
